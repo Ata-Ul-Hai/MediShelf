@@ -1,0 +1,175 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  MediShelf backend — medicine strip scanning (Textract + Bedrock vision),
+  prescription extraction (Bedrock), voice (Polly), cabinet sync (DynamoDB),
+  daily safety sweep (EventBridge).
+
+Parameters:
+  BedrockModelId:
+    Type: String
+    Default: anthropic.claude-sonnet-4-20250514-v1:0
+    Description: Bedrock model id (must be enabled in the account/region)
+  DataBucketName:
+    Type: String
+    Default: ""
+    Description: Optional pre-created bucket for scan/prescription images (blank = create one)
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Architectures: [arm64]
+    Timeout: 29
+    MemorySize: 512
+    Environment:
+      Variables:
+        BEDROCK_MODEL_ID: !Ref BedrockModelId
+        TABLE_NAME: !Ref CabinetTable
+        BUCKET_NAME: !Ref DataBucket
+        NODE_OPTIONS: --enable-source-maps
+
+Resources:
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: prod
+      CorsConfiguration:
+        AllowOrigins: ["*"]
+        AllowHeaders: ["content-type"]
+        AllowMethods: ["GET", "POST", "OPTIONS"]
+
+  CabinetTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: medishelf-cabinet
+      AttributeDefinitions:
+        - AttributeName: householdId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: householdId
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  DataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !If
+        - HasBucketName
+        - !Ref DataBucketName
+        - !Sub medishelf-images-${AWS::AccountId}-${AWS::Region}
+      PublicAccessBlockConfiguration:
+        BlockPublicPolicy: true
+
+  Conditions:
+    HasBucketName: !Not [!Equals [!Ref DataBucketName, ""]]
+
+  ScanFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: dist/scan
+      Events:
+        Scan:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /scan
+            Method: POST
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+                - bedrock:InvokeModelWithResponseStream
+              Resource: "*"
+            - Effect: Allow
+              Action: [textract:DetectDocumentText]
+              Resource: "*"
+            - Effect: Allow
+              Action: [s3:PutObject]
+              Resource: !Sub ${DataBucket.Arn}/*
+
+  PrescriptionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: dist/prescription
+      Events:
+        Rx:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /prescription
+            Method: POST
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: "*"
+            - Effect: Allow
+              Action: [s3:PutObject]
+              Resource: !Sub ${DataBucket.Arn}/*
+
+  VoiceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: dist/voice
+      Events:
+        Voice:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /voice
+            Method: POST
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: [polly:SynthesizeSpeech]
+              Resource: "*"
+
+  CabinetSyncFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: dist/sync
+      Events:
+        PutCabinet:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /cabinet
+            Method: POST
+        GetCabinet:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /cabinet
+            Method: GET
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CabinetTable
+
+  DailySweepFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: dist/cron
+      Timeout: 60
+      Events:
+        DailySixAm:
+          Type: ScheduleV2
+          Properties:
+            ScheduleExpression: cron(0 0 * * ? *) # 00:00 UTC = 05:30 IST + buffer => morning sweep
+            Description: Daily cabinet safety sweep
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CabinetTable
+
+Outputs:
+  ApiUrl:
+    Description: Base URL of the HTTP API
+    Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/prod
+  TableName:
+    Value: !Ref CabinetTable

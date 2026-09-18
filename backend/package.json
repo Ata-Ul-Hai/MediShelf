@@ -1,0 +1,22 @@
+{
+  "name": "@medishelf/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "package": "npm run build && sam build && sam package"
+  },
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3",
+    "@aws-sdk/client-dynamodb": "^3",
+    "@aws-sdk/client-polly": "^3",
+    "@aws-sdk/client-s3": "^3",
+    "@aws-sdk/client-textract": "^3",
+    "@aws-sdk/lib-dynamodb": "^3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "typescript": "^5"
+  }
+}

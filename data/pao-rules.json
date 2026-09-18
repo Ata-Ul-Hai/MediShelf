@@ -1,0 +1,56 @@
+{
+  "eyedrops": {
+    "days": 28,
+    "note_en": "Discard multi-dose eye drops 28 days after opening (contamination risk; in-use bottles show 10-46% contamination).",
+    "note_hi": "आँख की बूँदें खोलने के 28 दिन बाद फेंक दें (संक्रमण का खतरा)।",
+    "source": "AAO — https://www.aao.org/eye-health/tips-prevention/how-to-store-eye-drops-properly ; CDC — https://www.cdc.gov/healthywater/hygiene/healthy-eyes/eye-drops.html"
+  },
+  "eyeointment": {
+    "days": 28,
+    "note_en": "Discard eye ointment ~1 month after opening unless the label says otherwise.",
+    "note_hi": "आँख की मरहम खोलने के लगभग 1 महीने बाद फेंकें, यदि लेबल पर कुछ और न हो।",
+    "source": "AAO storage guidance (same page as eye drops)"
+  },
+  "eardrops": {
+    "days": 28,
+    "note_en": "Discard ear drops ~28 days after opening (patient contamination).",
+    "note_hi": "कान की बूँदें खोलने के लगभग 28 दिन बाद फेंकें।",
+    "source": "Common pharmacist guidance; label may allow longer — label wins"
+  },
+  "nasalspray": {
+    "days": 60,
+    "note_en": "Discard nasal sprays 1-2 months after opening; 28 days if preservative-free.",
+    "note_hi": "नाक का स्प्रे खोलने के 1-2 महीने बाद फेंकें (बिना प्रिजर्वेटिव वाला 28 दिन)।",
+    "source": "Label guidance; preservative-free = 28 days"
+  },
+  "reconstituted-antibiotic": {
+    "days": 14,
+    "note_en": "Reconstituted antibiotic syrup is good ~10-14 days after mixing (amoxicillin 14d, azithromycin 10d, cephalexin 14d) — refrigerate.",
+    "note_hi": "मिलाई (पाउडर वाली) एंटीबायोटिक सिरप 10-14 दिन ही चलती है — फ्रिज में रखें।",
+    "source": "GoodRx reconstitution guide — https://www.goodrx.com/classes/antibiotics/how-long-do-liquid-antibiotics-last ; Cleveland Clinic"
+  },
+  "insulin": {
+    "days": 28,
+    "note_en": "In-use insulin (pen/vial at room temperature) is good ~28 days; unopened stock stays refrigerated until printed expiry.",
+    "note_hi": "इस्तेमाल में लगी इंसुलिन ~28 दिन चलती है; बंद पैक फ्रिज में छपी तारीख तक।",
+    "source": "Manufacturer labels (Lilly/Sanofi/Novo patient inserts)"
+  },
+  "oral-liquid": {
+    "days": 90,
+    "note_en": "Cough syrups/suspensions: use within ~1-3 months of opening; check the label.",
+    "note_hi": "खाँसी की सिरप आदि खोलने के 1-3 महीने में उपयोग करें; लेबल देखें।",
+    "source": "Label guidance; WHO eye-drop-style 28-day rule does NOT apply to oral liquids with preservatives"
+  },
+  "cream-tube": {
+    "days": 90,
+    "note_en": "Creams/ointments: discard ~3 months after opening (tube PAO).",
+    "note_hi": "क्रीम/मरहम खोलने के लगभग 3 महीने बाद फेंकें।",
+    "source": "PAO (Period After Opening) convention on cosmetic/dermal packs"
+  },
+  "none": {
+    "days": null,
+    "note_en": "No after-opening limit for this form; printed expiry applies.",
+    "note_hi": "इस रूप के लिए खोलने की सीमा नहीं; छपी तारीख लागू।",
+    "source": ""
+  }
+}

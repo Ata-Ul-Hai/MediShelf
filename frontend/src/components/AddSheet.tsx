@@ -8,6 +8,7 @@ import { t } from "./i18n";
 import { apiPrescription, apiScan, API_URL, online } from "@/lib/api";
 import { listenOnce, micSupported } from "@/lib/speech";
 import { matchPrescription } from "@medishelf/shared";
+import { Keyboard, ScanLine, FileText, X, Camera, Stethoscope } from "lucide-react";
 
 type Tab = "type" | "scan" | "rx";
 
@@ -53,23 +54,30 @@ export default function AddSheet({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end">
       <button aria-label="close" className="absolute inset-0 bg-black/40 fade-in" onClick={onClose} />
-      <div className="relative sheet-enter bg-white rounded-t-3xl shadow-2xl max-h-[88vh] flex flex-col">
-        <div className="flex items-center justify-between px-5 pt-4 pb-2">
-          <h2 className="font-bold text-lg">{T.title}</h2>
-          <button onClick={onClose} className="text-slate-400 text-2xl leading-none px-2">×</button>
+      <div className="relative sheet-enter rounded-t-[28px] bg-white shadow-2xl max-h-[88vh] flex flex-col">
+        <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-line" />
+        <div className="flex items-center justify-between px-5 pt-2.5 pb-2">
+          <h2 className="text-lg font-extrabold tracking-tight">{T.title}</h2>
+          <button onClick={onClose} aria-label="close" className="grid h-8 w-8 place-items-center rounded-full bg-paper text-mist hover:text-ink">
+            <X size={16} strokeWidth={2.4} />
+          </button>
         </div>
-        <div className="flex gap-1 px-4 pb-2">
-          {(["type", "scan", "rx"] as Tab[]).map((k) => (
-            <button
-              key={k}
-              onClick={() => setTab(k)}
-              className={`flex-1 rounded-xl px-2 py-2 text-sm font-medium ${
-                tab === k ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-600"
-              }`}
-            >
-              {k === "type" ? T.type : k === "scan" ? T.scan : T.rx}
-            </button>
-          ))}
+        <div className="flex gap-1.5 px-4 pb-2">
+          {(["type", "scan", "rx"] as Tab[]).map((k) => {
+            const Icon = k === "type" ? Keyboard : k === "scan" ? ScanLine : FileText;
+            return (
+              <button
+                key={k}
+                onClick={() => setTab(k)}
+                className={`flex flex-1 items-center justify-center gap-1.5 rounded-[14px] px-2 py-2.5 text-[12px] font-extrabold transition-colors ${
+                  tab === k ? "bg-teal text-white shadow-[0_4px_12px_rgba(14,94,84,0.3)]" : "bg-paper text-mist hover:text-ink"
+                }`}
+              >
+                <Icon size={15} strokeWidth={2.2} />
+                {k === "type" ? T.type : k === "scan" ? T.scan : T.rx}
+              </button>
+            );
+          })}
         </div>
         <div className="overflow-y-auto px-4 pb-8 pt-1">
           {tab === "type" && <TypeTab expiry={expiry} setExpiry={setExpiry} labels={T} onDone={onClose} />}
@@ -130,12 +138,12 @@ function TypeTab({
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder={labels.typePh}
-          className="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-base outline-none focus:border-emerald-500"
+          className="flex-1 rounded-xl border border-line px-4 py-3 text-base outline-none focus:border-teal"
         />
         {micSupported() && (
           <button
             onClick={onMic}
-            className={`rounded-xl px-4 text-lg ${listening ? "bg-red-500 text-white animate-pulse" : "bg-emerald-600 text-white"}`}
+            className={`rounded-xl px-4 text-lg ${listening ? "bg-red-500 text-white animate-pulse" : "bg-teal text-white"}`}
             title={labels.mic}
           >
             🎙
@@ -143,17 +151,17 @@ function TypeTab({
         )}
       </div>
       {listening && (
-        <p className="mt-2 text-xs text-emerald-700">{t(lang, "Listening…", "सुन रहे हैं…")}</p>
+        <p className="mt-2 text-xs text-teal">{t(lang, "Listening…", "सुन रहे हैं…")}</p>
       )}
-      <ul className="mt-3 divide-y divide-slate-100">
+      <ul className="mt-3 divide-y divide-line">
         {results.map((d) => (
           <li key={d.id}>
             <button
               onClick={() => setPicked(d)}
-              className="w-full text-left px-2 py-3 hover:bg-slate-50 rounded-lg"
+              className="w-full text-left px-2 py-3 hover:bg-paper rounded-lg"
             >
               <span className="font-semibold">{d.brand}</span>
-              <span className="block text-xs text-slate-500">
+              <span className="block text-xs text-mist">
                 {d.salts.map((s) => `${s.name}${s.strengthMg ? ` ${s.strengthMg}mg` : s.strengthText ? ` ${s.strengthText}` : ""}`).join(" + ")}
                 {d.company ? ` · ${d.company}` : ""}
               </span>
@@ -183,21 +191,21 @@ function ConfirmAdd({
   const { lang, addDrug } = useStore();
   return (
     <div>
-      <button onClick={onBack} className="text-sm text-slate-500 mb-3">← {t(lang, "back", "वापस")}</button>
-      <div className="rounded-2xl border border-slate-200 p-4">
+      <button onClick={onBack} className="text-sm text-mist mb-3">← {t(lang, "back", "वापस")}</button>
+      <div className="rounded-2xl border border-line p-4">
         <p className="font-bold text-lg">{drug.brand}</p>
-        <p className="text-sm text-slate-600">{drug.company}</p>
+        <p className="text-sm text-mist">{drug.company}</p>
         <div className="mt-2 flex flex-wrap gap-1">
           {drug.salts.map((s, i) => (
-            <span key={i} className="rounded-full bg-emerald-50 text-emerald-800 text-xs px-2.5 py-1 font-medium">
+            <span key={i} className="rounded-full bg-teal-soft text-teal text-xs px-2.5 py-1 font-medium">
               {s.name} {s.strengthMg ? `${s.strengthMg} mg` : s.strengthText ?? ""}
             </span>
           ))}
         </div>
         <p className="mt-3 text-sm">{lang === "hi" ? drug.purpose_hi || drug.purpose_en : drug.purpose_en}</p>
       </div>
-      <label className="block mt-4 text-sm font-medium text-slate-700">{labels.expiryPh}
-        <input type="date" value={expiry} onChange={(e) => setExpiry(e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3" />
+      <label className="block mt-4 text-sm font-medium text-ink/80">{labels.expiryPh}
+        <input type="date" value={expiry} onChange={(e) => setExpiry(e.target.value)} className="mt-1 w-full rounded-xl border border-line px-4 py-3" />
       </label>
       <button
         onClick={() => {
@@ -205,7 +213,7 @@ function ConfirmAdd({
           setExpiry("");
           onAdded?.();
         }}
-        className="mt-4 w-full rounded-xl bg-emerald-600 py-3.5 font-bold text-white shadow active:scale-[0.99]"
+        className="mt-4 w-full rounded-xl bg-teal py-3.5 text-[13px] font-extrabold text-white shadow-[0_6px_16px_rgba(14,94,84,0.3)] shadow active:scale-[0.99]"
       >
         {labels.add}
       </button>
@@ -293,36 +301,36 @@ function ScanTab({
       {!image ? (
         <button
           onClick={() => fileRef.current?.click()}
-          className="w-full rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50 py-10 text-center"
+          className="w-full rounded-2xl border-2 border-dashed border-teal/40 bg-teal-soft py-10 text-center"
         >
-          <span className="block text-4xl">📸</span>
-          <span className="mt-2 block font-semibold text-emerald-800">
+          <span className="mx-auto grid h-12 w-12 place-items-center rounded-[16px] bg-teal-soft text-teal"><Camera size={24} strokeWidth={1.9} /></span>
+          <span className="mt-2.5 block text-[13px] font-extrabold text-teal-deep">
             {t(lang, "Photograph the strip", "स्ट्रिप की फ़ोटो लें")}
           </span>
-          <span className="mt-1 block text-xs text-emerald-700">
+          <span className="mt-1 block text-xs text-teal">
             {t(lang, "Torn or half-covered packs are fine — we read every pocket.", "फटी/आधी छिपी स्ट्रिप भी चलेगी — हर पॉकेट पढ़ते हैं।")}
           </span>
         </button>
       ) : (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={image} alt="captured strip" className="w-full max-h-56 object-contain rounded-2xl border border-slate-200" />
+          <img src={image} alt="captured strip" className="w-full max-h-56 object-contain rounded-2xl border border-line" />
           <div className="mt-3 flex gap-2">
-            <button onClick={() => fileRef.current?.click()} className="flex-1 rounded-xl bg-slate-100 py-3 font-medium">
+            <button onClick={() => fileRef.current?.click()} className="flex-1 rounded-xl bg-paper py-3 text-[13px] font-bold text-ink">
               {t(lang, "Retake", "दोबारा")}
             </button>
-            <button onClick={identify} disabled={busy} className="flex-1 rounded-xl bg-emerald-600 py-3 font-bold text-white disabled:opacity-50">
+            <button onClick={identify} disabled={busy} className="flex-1 rounded-xl bg-teal py-3 text-[13px] font-extrabold text-white shadow-[0_6px_16px_rgba(14,94,84,0.3)] disabled:opacity-50">
               {busy ? t(lang, "Reading…", "पढ़ रहे हैं…") : t(lang, "Identify", "पहचानें")}
             </button>
           </div>
         </>
       )}
 
-      {err && <p className="mt-3 rounded-xl bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">{err}</p>}
+      {err && <p className="mt-3 rounded-xl bg-warn-soft ring-1 ring-warn/25 border-0 p-3 text-sm text-warn">{err}</p>}
 
       {candidates.length > 0 && (
         <>
-          <p className="mt-4 text-sm font-semibold text-slate-700">
+          <p className="mt-4 text-sm font-semibold text-ink/80">
             {t(lang, "Is it one of these? Tap to confirm", "इनमें से कौन सी है? दबाकर पुष्टि करें")}
           </p>
           <ul className="mt-2 space-y-2">
@@ -347,15 +355,15 @@ function ScanTab({
                       onDone?.();
                     }
                   }}
-                  className="w-full text-left rounded-2xl border border-slate-200 p-3 hover:border-emerald-400"
+                  className="w-full text-left rounded-2xl border border-line p-3 hover:border-teal"
                 >
                   <span className="font-semibold">
                     {c.brand}{" "}
-                    <span className="text-xs text-emerald-700 font-normal">{Math.round(c.confidence * 100)}% match</span>
+                    <span className="text-xs text-teal font-normal">{Math.round(c.confidence * 100)}% match</span>
                   </span>
-                  <span className="block text-xs text-slate-500">{c.salts}</span>
+                  <span className="block text-xs text-mist">{c.salts}</span>
                   {c.evidence.length > 0 && (
-                    <span className="block mt-1 text-[10px] text-slate-400">“{c.evidence.slice(0, 2).join("”, “")}”</span>
+                    <span className="block mt-1 text-[10px] text-mist">“{c.evidence.slice(0, 2).join("”, “")}”</span>
                   )}
                 </button>
               </li>
@@ -405,10 +413,10 @@ function RxTab() {
   };
 
   const STATUS_STYLE: Record<PrescriptionMatch["status"], string> = {
-    "owned-same-strength": "bg-emerald-50 border-emerald-300 text-emerald-900",
-    "owned-different-strength": "bg-amber-50 border-amber-300 text-amber-900",
-    "same-class-owned": "bg-amber-50 border-amber-300 text-amber-900",
-    missing: "bg-slate-50 border-slate-300 text-slate-800",
+    "owned-same-strength": "bg-teal-soft ring-1 ring-teal/30 border-0 text-teal-deep",
+    "owned-different-strength": "bg-warn-soft border-warn/40 text-amber-900",
+    "same-class-owned": "bg-warn-soft border-warn/40 text-amber-900",
+    missing: "bg-paper ring-1 ring-line text-ink",
   };
   const STATUS_ICON: Record<PrescriptionMatch["status"], string> = {
     "owned-same-strength": "✅",
@@ -430,54 +438,54 @@ function RxTab() {
       {!image ? (
         <button
           onClick={() => fileRef.current?.click()}
-          className="w-full rounded-2xl border-2 border-dashed border-sky-300 bg-sky-50 py-10 text-center"
+          className="w-full rounded-2xl border-2 border-dashed border-teal/40 bg-teal-soft/60 py-10 text-center"
         >
-          <span className="block text-4xl">🩺</span>
-          <span className="mt-2 block font-semibold text-sky-800">
+          <span className="mx-auto grid h-12 w-12 place-items-center rounded-[16px] bg-teal-soft text-teal"><Stethoscope size={24} strokeWidth={1.9} /></span>
+          <span className="mt-2.5 block text-[13px] font-extrabold text-teal-deep">
             {t(lang, "Photograph the prescription", "पर्चे की फ़ोटो लें")}
           </span>
-          <span className="mt-1 block text-xs text-sky-700">
+          <span className="mt-1 block text-xs text-teal">
             {t(lang, "We check it against your cabinet — no need to call anyone to double-check.", "हम आपकी कैबिनेट से मिलाते हैं — किसी को फ़ोन करके पूछने की ज़रूरत नहीं।")}
           </span>
         </button>
       ) : (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={image} alt="prescription" className="w-full max-h-56 object-contain rounded-2xl border border-slate-200" />
+          <img src={image} alt="prescription" className="w-full max-h-56 object-contain rounded-2xl border border-line" />
           <div className="mt-3 flex gap-2">
-            <button onClick={() => fileRef.current?.click()} className="flex-1 rounded-xl bg-slate-100 py-3 font-medium">
+            <button onClick={() => fileRef.current?.click()} className="flex-1 rounded-xl bg-paper py-3 text-[13px] font-bold text-ink">
               {t(lang, "Retake", "दोबारा")}
             </button>
-            <button onClick={extract} disabled={busy} className="flex-1 rounded-xl bg-sky-600 py-3 font-bold text-white disabled:opacity-50">
+            <button onClick={extract} disabled={busy} className="flex-1 rounded-xl bg-teal py-3 text-[13px] font-extrabold text-white shadow-[0_6px_16px_rgba(14,94,84,0.3)] disabled:opacity-50">
               {busy ? t(lang, "Reading…", "पढ़ रहे हैं…") : t(lang, "Read prescription", "पर्चा पढ़ें")}
             </button>
           </div>
         </>
       )}
 
-      {err && <p className="mt-3 rounded-xl bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">{err}</p>}
+      {err && <p className="mt-3 rounded-xl bg-warn-soft ring-1 ring-warn/25 border-0 p-3 text-sm text-warn">{err}</p>}
 
       {meds && !matches && (
         <>
-          <p className="mt-4 text-sm font-semibold text-slate-700">
+          <p className="mt-4 text-sm font-semibold text-ink/80">
             {t(lang, "Medicines we read — edit any wrong salt, then match", "पढ़ी गई दवाइयाँ — ग़लत सॉल्ट ठीक करें, फिर मिलाएँ")}
           </p>
           <ul className="mt-2 space-y-2">
             {meds.map((m, i) => (
-              <li key={i} className="rounded-2xl border border-slate-200 p-3">
+              <li key={i} className="rounded-2xl border border-line p-3">
                 <p className="font-semibold">{m.rawText}</p>
                 <input
                   value={m.salt ?? ""}
                   placeholder={t(lang, "salt (editable)", "सॉल्ट (संपादन योग्य)")}
                   onChange={(e) => setMeds(meds.map((x, j) => (j === i ? { ...x, salt: e.target.value } : x)))}
-                  className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm"
                 />
               </li>
             ))}
           </ul>
           <button
             onClick={() => setMatches(matchPrescription(meds, items))}
-            className="mt-4 w-full rounded-xl bg-sky-600 py-3.5 font-bold text-white"
+            className="mt-4 w-full rounded-xl bg-teal py-3.5 text-[13px] font-extrabold text-white shadow-[0_6px_16px_rgba(14,94,84,0.3)]"
           >
             {t(lang, "Match against my cabinet", "मेरी कैबिनेट से मिलाएँ")}
           </button>

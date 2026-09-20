@@ -1,12 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Geist } from "next/font/google";
+import { Manrope, Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
 import { StoreProvider } from "@/lib/store";
 import SwRegister from "@/components/SwRegister";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
+});
+
+const deva = Noto_Sans_Devanagari({
+  variable: "--font-deva",
+  subsets: ["devanagari"],
 });
 
 export const metadata: Metadata = {
@@ -18,15 +23,15 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#059669",
+  themeColor: "#0e5e54",
   width: "device-width",
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">
+    <html lang="en" className={`${manrope.variable} ${deva.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col bg-paper text-ink font-sans">
         <StoreProvider>{children}</StoreProvider>
         <SwRegister />
       </body>

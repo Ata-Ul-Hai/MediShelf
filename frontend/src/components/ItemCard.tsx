@@ -31,7 +31,7 @@ export default function ItemCard({ id }: { id: string }) {
 
   return (
     <Link
-      href={`/item/${item.id}`}
+      href={`/item?id=${item.id}`}
       className={`block rounded-2xl bg-white p-3 shadow-sm hover:shadow-md transition ${RING[status]}`}
     >
       <div className="flex items-start justify-between gap-2">

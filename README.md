@@ -71,9 +71,11 @@ flowchart LR
 ## Run locally
 
 ```bash
-# frontend
+# frontend (dev server)
 cd frontend && npm install && npm run dev
-#   (production build + offline test: npm run build && npm start)
+
+# production build → fully static out/ (works offline, serves anywhere)
+npm run build && npm run serve   # http://localhost:3111
 
 # shared engine tests (no deps needed)
 cd shared && node --experimental-strip-types --no-warnings --test src/engine.test.ts
@@ -84,6 +86,24 @@ cd backend && npm install && npm run build && sam build && sam deploy --guided
 ```
 
 No backend configured? Everything except scan/prescription/voice still works — that's the offline-first design.
+
+Search understands how India actually types and speaks: salt names (`paracetamol`, `azithromycin`), prescription shorthand (`pcm`, `azm`), Hinglish symptoms (`bukhar`, `khansi`, `dast`), and Devanagari (`डोलो`, `बुखार`) — all offline, all unit-tested.
+
+## Mobile app (Capacitor)
+
+The web build *is* the app: `output: "export"` produces a fully static bundle that Capacitor wraps into native projects — one codebase, Android + iOS + PWA.
+
+```bash
+cd frontend
+npm run apk        # build → sync web assets → gradle assembleDebug
+# APK: android/app/build/outputs/apk/debug/app-debug.apk  (sideload: adb install)
+```
+
+- Android SDK at `~/Library/Android/sdk` (Android Studio's default) is picked up automatically via `android/local.properties`.
+- iOS (needs Xcode + a free Apple ID): `npx cap add ios && npx cap sync` → open `ios/App` in Xcode → run on a device. App Store/TestFlight needs the $99 developer account — skip for the hackathon.
+- PWA stays the primary install path for judges (Add to Home Screen); the APK is the "hold it in your hand" proof.
+
+Changed web code? Re-run `npm run cap:sync` (or just `npm run apk`) before rebuilding.
 
 ## Demo quick path
 

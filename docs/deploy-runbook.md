@@ -26,8 +26,13 @@ Wire the frontend + deploy to Amplify:
 cd frontend
 NEXT_PUBLIC_API_URL=<ApiUrl> npm run build   # verify locally first
 ```
-- Amplify Hosting → Connect a Git repo (recommended) or `npx amplify hosting deploy`.
+- The build is a **static export** (`out/`). Amplify: connect the Git repo with an
+  `amplify.yml` (preBuild `npm ci --prefix frontend`, build `npm run build --prefix frontend`,
+  artifacts.baseDirectory `out`) or drag-and-drop the `out/` folder.
 - Set env var `NEXT_PUBLIC_API_URL=<ApiUrl>` in Amplify build settings.
+- sw.js updates propagate immediately (`updateViaCache: "none"` at registration).
+- Android APK (optional demo add-on): `npm run apk` in `frontend/` → sideload
+  `android/app/build/outputs/apk/debug/app-debug.apk`.
 - Smoke test: scan a strip, read a prescription, play voice, then airplane-mode the type path.
 
 Verify the daily sweep ran: DynamoDB console → medishelf-cabinet → items should

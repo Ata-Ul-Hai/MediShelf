@@ -1,13 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { t } from "@/components/i18n";
 import { normalizeSalt, limitFor } from "@medishelf/shared";
 
 export default function StackPage() {
-  const { salt } = useParams<{ salt: string }>();
+  return (
+    <Suspense fallback={null}>
+      <StackDetail />
+    </Suspense>
+  );
+}
+
+function StackDetail() {
+  const salt = useSearchParams().get("salt") ?? "";
   const { items, report, lang } = useStore();
   const decoded = decodeURIComponent(salt);
   const key = normalizeSalt(decoded);
@@ -46,7 +55,7 @@ export default function StackPage() {
       <ul className="mt-2 space-y-2">
         {members.map((m) => (
           <li key={m.id}>
-            <Link href={`/item/${m.id}`} className="block rounded-2xl bg-white border border-slate-200 p-4">
+            <Link href={`/item?id=${m.id}`} className="block rounded-2xl bg-white border border-slate-200 p-4">
               <p className="font-bold">{m.brand}</p>
               <p className="text-xs text-slate-500">
                 {m.salts

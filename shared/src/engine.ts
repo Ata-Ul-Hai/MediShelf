@@ -215,7 +215,11 @@ export function matchPrescription(
   cabinet: CabinetItem[]
 ): PrescriptionMatch[] {
   return prescribed.map((p) => {
-    const target = p.salt ? normalizeSalt(p.salt) : null;
+    // shorthand inference: "Tab PCM 650 TDS" → paracetamol when the model
+    // couldn't resolve the salt itself
+    const inferred = p.salt ?? saltFromRawText(p.rawText);
+    const withSalt: PrescribedItem = inferred ? { ...p, salt: inferred } : p;
+    const target = inferred ? normalizeSalt(inferred) : null;
     const sameSalt = target
       ? cabinet.filter((c) => c.salts.some((s) => normalizeSalt(s.name) === target))
       : [];
@@ -227,7 +231,7 @@ export function matchPrescription(
       const matched = exact.length ? exact : sameSalt;
       const strengthExact = exact.length > 0;
       return {
-        prescribed: p,
+        prescribed: withSalt,
         status: strengthExact ? "owned-same-strength" : "owned-different-strength",
         matchedItems: matched,
         message_en: strengthExact
@@ -239,11 +243,11 @@ export function matchPrescription(
       };
     }
     // no same salt — check same therapeutic class (e.g. two different NSAIDs)
-    const cls = saltClassHint(p.salt ?? p.rawText);
+    const cls = saltClassHint(target ?? p.rawText);
     const sameClass = cls ? cabinet.filter((c) => c.classes.includes(cls)) : [];
     if (sameClass.length) {
       return {
-        prescribed: p,
+        prescribed: withSalt,
         status: "same-class-owned",
         matchedItems: sameClass,
         message_en: `Different salt but same family (${cls}) as your ${sameClass.map((m) => m.brand).join(", ")}. Ask a pharmacist before taking both.`,
@@ -251,7 +255,7 @@ export function matchPrescription(
       };
     }
     return {
-      prescribed: p,
+      prescribed: withSalt,
       status: "missing",
       matchedItems: [],
       message_en: `Not in your cabinet. You will need to buy it.`,
@@ -322,4 +326,89 @@ export function fuzzyRank(
     if (best >= 0.45) scored.push({ id: t.id, score: Math.round(best * 100) / 100, why });
   }
   return scored.sort((a, b) => b.score - a.score).slice(0, limit);
+}
+
+// ─── search expansion: prescription shorthand + Hinglish + Hindi script ──────
+
+/** How people actually write/say medicines in India → canonical search keyword. */
+export const ABBREV: Record<string, string> = {
+  pcm: "paracetamol", para: "paracetamol", acetaminophen: "paracetamol",
+  azm: "azithromycin", azi: "azithromycin", azithro: "azithromycin",
+  cetriz: "cetirizine", czine: "cetirizine",
+  diclo: "diclofenac", aceclo: "aceclofenac",
+  ibu: "ibuprofen",
+  omez: "omeprazole",
+  metform: "metformin",
+};
+
+/** Spoken Hinglish symptom words → English keyword to match in purposes. */
+export const HINGLISH: Record<string, string> = {
+  bukhar: "fever", "बुखार": "fever",
+  dard: "pain", "दर्द": "pain",
+  sardi: "cold", "सर्दी": "cold",
+  jukam: "cold", "जुकाम": "cold",
+  khansi: "cough", "खाँसी": "cough", "खांसी": "cough",
+  dast: "diarrhoea", "दस्त": "diarrhoea",
+  khujli: "itching", "खुजली": "itching",
+  ulan: "inflammation", "सूजन": "inflammation",
+  ulti: "vomiting", "उल्टी": "vomiting",
+  mitli: "nausea", "मिचलाना": "nausea",
+  kamzori: "fatigue", "कमज़ोरी": "fatigue",
+};
+
+/** Devanagari brand spellings → brand keywords (e.g. डोलो → dolo). */
+export const HINDI_BRANDS: Array<[string, string]> = [
+  ["डोलो", "dolo"],
+  ["क्रोसिन", "crocin"],
+  ["कैलपोल", "calpol"],
+  ["कॉम्बिफ्लैम", "combiflam"],
+  ["पैरासिटामोल", "paracetamol"],
+  ["एज़िथ्रो", "azithral"],
+  ["एज़िथ्रोमाइसिन", "azithromycin"],
+  ["पैंटोप्रेज़ोल", "pantoprazole"],
+  ["पैंटोप", "pantop"],
+  ["डोमस्टाल", "domstal"],
+  ["एनो", "eno"],
+  ["डिजीन", "digene"],
+  ["मेफ्टाल", "meftal"],
+  ["सेट्रिज़िन", "cetirizine"],
+];
+
+/**
+ * Expand a raw query into search variants: the original, prescription
+ * shorthand expansions ("PCM 650" → paracetamol), Hinglish symptom words
+ * ("bukhar" → fever), and Devanagari brand aliases (डोलो → dolo).
+ */
+export function expandQuery(raw: string): string[] {
+  const q = raw.toLowerCase().trim();
+  const variants = new Set<string>();
+  if (!q) return [];
+  variants.add(q);
+
+  if (ABBREV[q]) variants.add(ABBREV[q]);
+
+  const doseTokens = new Set(["mg", "mcg", "tab", "tablet", "cap", "capsule", "syp", "syrup", "tds", "bd", "od", "hs", "sos", "x", "1", "0"]);
+  for (const tok of q.split(/[\s,/+.-]+/)) {
+    if (!tok || doseTokens.has(tok)) continue;
+    if (ABBREV[tok]) variants.add(ABBREV[tok]);
+    if (HINGLISH[tok]) variants.add(HINGLISH[tok]);
+  }
+
+  for (const [hi, en] of HINDI_BRANDS) {
+    if (raw.includes(hi)) variants.add(en);
+  }
+  return [...variants];
+}
+
+/**
+ * Infer the generic salt from a prescription line like "Tab PCM 650 TDS x3d"
+ * by scanning it for known abbreviations/keywords. Returns null if unknown.
+ */
+export function saltFromRawText(rawText: string): string | null {
+  const lower = rawText.toLowerCase();
+  const keys = [...Object.keys(ABBREV)].sort((a, b) => b.length - a.length);
+  for (const k of keys) {
+    if (lower.includes(k)) return ABBREV[k];
+  }
+  return null;
 }

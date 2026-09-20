@@ -69,7 +69,7 @@ export default function SafetyBanner() {
 
       {top && (
         <Link
-          href={`/stack/${encodeURIComponent(top.salt)}`}
+          href={`/stack?salt=${encodeURIComponent(top.salt)}`}
           className={`block rounded-2xl p-4 text-white shadow-md danger-pulse ${
             top.severity === "danger" ? "bg-red-600" : "bg-amber-500"
           }`}

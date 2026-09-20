@@ -2,6 +2,7 @@ import { test } from "node:test";
 import {
   normalizeSalt,
   findSaltStacks,
+  saltFromRawText,
   paoFlag,
   printedExpiryFlag,
   cabinetReport,
@@ -9,7 +10,7 @@ import {
   fuzzyRank,
   levenshtein,
 } from "./engine.ts";
-import { DRUG_INDEX, PAO_RULES, itemFromDrug, drugById } from "./cabinet.ts";
+import { DRUG_INDEX, PAO_RULES, itemFromDrug, drugById, searchIndex } from "./cabinet.ts";
 import type { CabinetItem, PrescribedItem } from "./types.ts";
 
 const NOW = new Date("2026-09-18T10:00:00").getTime();
@@ -147,4 +148,37 @@ test("index integrity: unique ids, every entry has salts + purpose + hindi", () 
     ids.add(d.id);
     if (!d.brand || !d.salts.length || !d.purpose_en || !d.purpose_hi) throw new Error(`incomplete ${d.id}`);
   }
+});
+
+test("abbrev: 'pcm' and 'Tab PCM 650 TDS' resolve to paracetamol products", () => {
+  const hits = searchIndex("pcm", 5);
+  if (!hits.some((d) => /dolo|crocin|calpol/i.test(d.brand))) throw new Error("pcm → no paracetamol brands");
+  if (saltFromRawText("Tab PCM 650 TDS x3d") !== "paracetamol") throw new Error("saltFromRawText PCM");
+});
+
+test("abbrev: 'azm' finds azithromycin; salt inferred from raw prescription line", () => {
+  if (!searchIndex("azm", 5).some((d) => d.salts.some((s) => s.name === "azithromycin"))) throw new Error("azm");
+  if (saltFromRawText("Cap AZM 500 OD") !== "azithromycin") throw new Error("azm raw");
+});
+
+test("hinglish: 'bukhar' surfaces fever medicines (Dolo/Calpol)", () => {
+  const hits = searchIndex("bukhar", 8);
+  if (!hits.some((d) => /dolo|calpol|crocin/i.test(d.brand))) throw new Error(`bukhar → ${hits.map((h) => h.brand).join(",")}`);
+});
+
+test("hindi script: 'बुखार' surfaces fever medicines; 'डोलो' finds Dolo", () => {
+  if (!searchIndex("बुखार", 8).some((d) => /dolo|calpol|crocin/i.test(d.brand))) throw new Error("बुखार purpose");
+  if (!searchIndex("डोलो", 5).some((d) => d.brand.startsWith("Dolo"))) throw new Error("डोलो brand");
+});
+
+test("prescription: raw shorthand 'Tab PCM 650' matches Dolo in cabinet without explicit salt", () => {
+  const rx: PrescribedItem[] = [{ rawText: "Tab PCM 650 TDS", salt: null, strengthMg: 650 }];
+  const m = matchPrescription(rx, [item("dolo-650")])[0];
+  if (m.status !== "owned-same-strength") throw new Error(m.status);
+  if (m.prescribed.salt !== "paracetamol") throw new Error("salt not back-filled");
+});
+
+test("search: empty and junk queries stay empty", () => {
+  if (searchIndex("", 5).length) throw new Error("empty");
+  if (searchIndex("zzzqqq", 5).length) throw new Error("junk");
 });

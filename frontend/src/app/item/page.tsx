@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { t } from "@/components/i18n";
 import { itemStatus } from "@/components/SafetyBanner";
@@ -9,8 +10,16 @@ import { speak } from "@/lib/speech";
 import { apiVoice } from "@/lib/api";
 import { PAO_RULES } from "@medishelf/shared";
 
-export default function ItemDetail() {
-  const { id } = useParams<{ id: string }>();
+export default function ItemPage() {
+  return (
+    <Suspense fallback={null}>
+      <ItemDetail />
+    </Suspense>
+  );
+}
+
+function ItemDetail() {
+  const id = useSearchParams().get("id") ?? "";
   const { itemById, report, lang, updateItem, removeItem } = useStore();
   const item = itemById(id);
 

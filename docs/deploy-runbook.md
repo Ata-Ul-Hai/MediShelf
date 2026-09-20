@@ -21,6 +21,12 @@ sam deploy --guided           # accept defaults; note the ApiUrl output
 ```
 
 
+## LIVE URLS (current deployment, account 481609031993)
+- **App (Amplify):** https://main.d2h6irovbh2zum.amplifyapp.com
+- **API:** https://40vydrqz52.execute-api.us-east-1.amazonaws.com/prod
+- Amplify manual-deploy update flow: `cd frontend && NEXT_PUBLIC_API_URL=<api> npm run build && zip -qr /tmp/web.zip out/ && aws amplify create-deployment --app-id d2h6irovbh2zum --branch-name main --output json` → PUT zip to `zipUploadUrl` → `aws amplify start-deployment --job-id <id>`
+- NOTE: CloudFront is gated until the new account is verified (support case / ~24h). Bedrock Nova invocation had the same gate — retry `aws bedrock-runtime converse --model-id amazon.nova-lite-v1:0 --messages '[{"role":"user","content":[{"text":"hi"}]}]' --region us-east-1` periodically; until it passes, /scan falls back to textract+fuzzy and /prescription returns an error.
+
 Wire the frontend + deploy to Amplify:
 ```bash
 cd frontend

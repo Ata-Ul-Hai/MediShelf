@@ -21,11 +21,14 @@ sam deploy --guided           # accept defaults; note the ApiUrl output
 ```
 
 
-## LIVE URLS (current deployment, account 481609031993)
-- **App (Amplify):** https://main.d2h6irovbh2zum.amplifyapp.com
-- **API:** https://40vydrqz52.execute-api.us-east-1.amazonaws.com/prod
-- Amplify manual-deploy update flow: `cd frontend && NEXT_PUBLIC_API_URL=<api> npm run build && zip -qr /tmp/web.zip out/ && aws amplify create-deployment --app-id d2h6irovbh2zum --branch-name main --output json` → PUT zip to `zipUploadUrl` → `aws amplify start-deployment --job-id <id>`
-- **Repo:** https://github.com/Ata-Ul-Hai/MediShelf
+## LIVE URLS (kept out of the public repo on purpose)
+Endpoints and identifiers are account-specific and deliberately not committed
+here (the frontend JS bundle exposes the API URL by design; server-side
+throttling on the API stage is the actual mitigation, not doc secrecy).
+- App (Amplify): see Amplify console → domain
+- API: `sam deploy` output `ApiUrl`, or `aws cloudformation describe-stacks --stack-name medishelf --query 'Stacks[0].Outputs'`
+- Amplify manual-deploy update flow: `cd frontend && NEXT_PUBLIC_API_URL=<api> npm run build && cd out && zip -qr /tmp/web.zip . && aws amplify create-deployment --app-id <app-id> --branch-name main --output json` → PUT zip to `zipUploadUrl` (site files at zip ROOT, not under out/) → `aws amplify start-deployment --job-id <id>`
+- Repo: this repository
 - NOTE: New-account gates (as of first deploy): CloudFront blocked; Textract + Bedrock return subscription/verification errors until AWS finishes account verification (<2h per AWS console message, aws-verification@amazon.com if longer). Text-mode /scan and all other endpoints work during the wait; camera-scan and /prescription activate automatically once verification lands — verify with:
   `aws bedrock-runtime converse --model-id amazon.nova-lite-v1:0 --messages '[{"role":"user","content":[{"text":"hi"}]}]' --region us-east-1`
 - NOTE: CloudFront is gated until the new account is verified (support case / ~24h). Bedrock Nova invocation had the same gate — retry `aws bedrock-runtime converse --model-id amazon.nova-lite-v1:0 --messages '[{"role":"user","content":[{"text":"hi"}]}]' --region us-east-1` periodically; until it passes, /scan falls back to textract+fuzzy and /prescription returns an error.

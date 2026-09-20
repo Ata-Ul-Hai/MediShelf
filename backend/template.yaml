@@ -28,6 +28,9 @@ Globals:
         BUCKET_NAME: !Ref DataBucket
         NODE_OPTIONS: --enable-source-maps
 
+Conditions:
+  HasBucketName: !Not [!Equals [!Ref DataBucketName, ""]]
+
 Resources:
   HttpApi:
     Type: AWS::Serverless::HttpApi
@@ -59,9 +62,6 @@ Resources:
         - !Sub medishelf-images-${AWS::AccountId}-${AWS::Region}
       PublicAccessBlockConfiguration:
         BlockPublicPolicy: true
-
-  Conditions:
-    HasBucketName: !Not [!Equals [!Ref DataBucketName, ""]]
 
   ScanFunction:
     Type: AWS::Serverless::Function

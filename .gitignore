@@ -7,3 +7,4 @@ dist/
 .env*.local
 data/kaggle/
 data/drug-index-merged.json
+docs/demo-video.mp4

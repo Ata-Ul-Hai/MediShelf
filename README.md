@@ -2,6 +2,14 @@
 
 **WeMakeDevs × AWS "First Commit" (Sept 17–20, 2026) · Ship It track**
 
+## 🎬 Demo
+
+▶️ **[Watch the 2-minute demo video on YouTube](https://youtube.com/shorts/OafiBDC5rfY?feature=share)**
+
+| Duplicate-salt danger | Safety alerts | After-opening clock | Torn-strip scan |
+|---|---|---|---|
+| ![Cabinet with duplicate-salt danger alert](docs/screenshots/home-danger.png) | ![Safety alerts page](docs/screenshots/alerts.png) | ![After-opening discard clock](docs/screenshots/item-pao-clock.png) | ![Scan candidates with confirm cards](docs/screenshots/scan-candidates.png) |
+
 MediShelf is an offline-capable medicine-cabinet PWA. Photograph a medicine strip and it identifies the salt and purpose, warns when two products in your cabinet share a salt (the classic Dolo-650 + cold-medicine paracetamol stacking risk), starts **after-opening discard countdowns** that the printed expiry never tells you about (eye drops: 28 days, reconstituted antibiotic syrups: 10–14 days), and matches a doctor's prescription against what you already own — in English and हिंदी, with voice.
 
 > ⚠️ Informational only — not medical advice. Always follow the printed label and ask a pharmacist. Category after-opening rules cite AAO/CDC and manufacturer guidance; **the printed label always wins**.
@@ -117,7 +125,7 @@ medishelf/
 ├── data/            # drug-index.json (140), pao-rules.json, scripts (gen, kaggle merge)
 ├── frontend/        # Next.js PWA (src/app, src/components, src/lib)
 ├── backend/         # SAM template + Lambda handlers (src: scan, prescription, voice, sync, cron)
-└── docs/            # architecture diagram, demo video script
+└── docs/            # architecture, deploy runbook, video script, screenshots
 ```
 
 ## Sources for the safety rules

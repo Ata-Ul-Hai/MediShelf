@@ -3,19 +3,20 @@
 // offline fallback — avoids stale-HTML/mismatched-chunk issues), immutable
 // /_next/static assets cache-first. Cabinet data lives in IndexedDB and the
 // drug index is bundled in the JS chunks.
-const CACHE = "medishelf-v3";
+const CACHE = "medishelf-v4";
 const SHELL = ["/", "/manifest.webmanifest", "/icon.svg"];
 
-/** Cache the root document + every /_next/static chunk it references, so the
- * shell hydrates fully even if the SW activated mid-page-load. */
+/** Cache the root document + every /_next/static asset it references (JS AND
+ * CSS — without the CSS the offline shell renders unstyled), so the shell
+ * hydrates fully even if the SW activated mid-page-load. */
 async function warmCache(cache) {
   try {
     const res = await fetch("/", { cache: "no-cache" });
     if (!res.ok) return;
     await cache.put("/", res.clone());
     const html = await res.text();
-    const chunkUrls = [...new Set(html.match(/\/_next\/static\/[^"'\s)<>]+\.js/g) ?? [])];
-    await Promise.allSettled(chunkUrls.map((u) => cache.add(u)));
+    const assetUrls = [...new Set(html.match(/\/_next\/static\/[^"'\s)<>]+\.(js|css)/g) ?? [])];
+    await Promise.allSettled(assetUrls.map((u) => cache.add(u)));
   } catch {
     /* offline during warm-up — the runtime cache-first handler fills the rest */
   }

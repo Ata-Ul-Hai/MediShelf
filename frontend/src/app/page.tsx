@@ -52,13 +52,17 @@ export default function Home() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <span
-              className={`text-[10px] font-semibold rounded-full px-2 py-1 ${
-                online() ? "bg-emerald-500/40" : "bg-amber-400 text-amber-950"
-              }`}
-            >
-              {online() ? t(lang, "ONLINE", "ऑनलाइन") : t(lang, "OFFLINE OK", "ऑफ़लाइन चलेगा")}
-            </span>
+            {/* mount-gated: navigator.onLine isn't available during SSR, and a
+                suppressHydrationWarning chip would keep the server's stale text */}
+            {ready && (
+              <span
+                className={`text-[10px] font-semibold rounded-full px-2 py-1 ${
+                  online() ? "bg-emerald-500/40" : "bg-amber-400 text-amber-950"
+                }`}
+              >
+                {online() ? t(lang, "ONLINE", "ऑनलाइन") : t(lang, "OFFLINE OK", "ऑफ़लाइन चलेगा")}
+              </span>
+            )}
             <button
               onClick={() => setLang(lang === "en" ? "hi" : "en")}
               className="rounded-full bg-white/15 px-3 py-1.5 text-xs font-bold"

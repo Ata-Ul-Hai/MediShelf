@@ -330,8 +330,9 @@ function ScanTab({
               <li key={i}>
                 <button
                   onClick={() => {
-                    if (c.raw) setPickedRaw(c.raw);
-                    else
+                    if (c.raw) {
+                      setPickedRaw(c.raw);
+                    } else {
                       addRaw({
                         id: crypto.randomUUID(),
                         drugId: null,
@@ -343,7 +344,8 @@ function ScanTab({
                         purpose_hi: c.purpose,
                         paoCategory: "none",
                       });
-                    onDone?.();
+                      onDone?.();
+                    }
                   }}
                   className="w-full text-left rounded-2xl border border-slate-200 p-3 hover:border-emerald-400"
                 >

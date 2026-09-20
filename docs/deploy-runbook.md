@@ -3,7 +3,8 @@
 One-time account prep (needs the AWS console, ~15 min):
 1. **AWS account** + root MFA. Create an IAM user (or use IAM Identity Center) with `AdministratorAccess` for the hackathon.
 2. **Apply the $100 event credits**: Billing → Credits (code distributed by WeMakeDevs).
-3. **Enable Bedrock model access**: us-east-1 console → Bedrock → Model access → request Claude (anthropic.claude-sonnet-4-20250514-v1:0) *and* a Nova model as fallback. Approval can take minutes–hours, so do this first.
+3. **Bedrock model access**: nothing required for the default (Nova Lite auto-enables on first invoke). Anthropic Claude is skipped for now (use-case form rejected → support case filed); once AWS clears it, submit the use-case form via Model catalog → Claude Sonnet → Open in playground, then redeploy with:
+   `sam deploy --parameter-overrides BedrockModelId=anthropic.claude-sonnet-4-20250514-v1:0`
 4. **Install CLI tooling** (local machine):
    ```bash
    brew install awscli aws-sam-cli
@@ -18,8 +19,7 @@ npm run build                 # esbuild-bundles the 5 handlers into dist/
 sam build
 sam deploy --guided           # accept defaults; note the ApiUrl output
 ```
-If deploy complains about Bedrock model access, redeploy with:
-`--parameter-overrides BedrockModelId=amazon.nova-lite-v1:0`
+
 
 Wire the frontend + deploy to Amplify:
 ```bash

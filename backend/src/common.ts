@@ -11,7 +11,7 @@ export const textract = new TextractClient({});
 export const s3 = new S3Client({});
 export const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
-export const MODEL_ID = process.env.BEDROCK_MODEL_ID ?? "anthropic.claude-sonnet-4-20250514-v1:0";
+export const MODEL_ID = process.env.BEDROCK_MODEL_ID ?? "amazon.nova-lite-v1:0";
 
 export function json(status: number, body: unknown) {
   return { statusCode: status, headers: { "content-type": "application/json" }, body: JSON.stringify(body) };

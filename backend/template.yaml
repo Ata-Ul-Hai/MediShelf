@@ -8,8 +8,8 @@ Description: >
 Parameters:
   BedrockModelId:
     Type: String
-    Default: anthropic.claude-sonnet-4-20250514-v1:0
-    Description: Bedrock model id (must be enabled in the account/region)
+    Default: amazon.nova-lite-v1:0
+    Description: Bedrock model id (default Nova Lite — no enablement needed; switch to Claude after Anthropic use-case approval)
   DataBucketName:
     Type: String
     Default: ""

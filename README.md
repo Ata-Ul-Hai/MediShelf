@@ -2,6 +2,9 @@
 
 **WeMakeDevs × AWS "First Commit" (Sept 17–20, 2026) · Ship It track**
 
+## 🚀 Live
+**[MediShelf](https://main.d2h6irovbh2zum.amplifyapp.com/)**
+
 ## 🎬 Demo
 
 ▶️ **[Watch the 2-minute demo video on YouTube](https://youtube.com/shorts/OafiBDC5rfY?feature=share)**
